@@ -50,6 +50,7 @@ def read_protein_from_file(file_pointer):
 
         while True:
             next_line = file_pointer.readline()
+            print ("nextline:", next_line)
             if next_line == '[ID]\n':
                 id_ = file_pointer.readline()[:-1]
                 dict_.update({'id': id_})
@@ -67,8 +68,8 @@ def read_protein_from_file(file_pointer):
             elif next_line == '[TERTIARY]\n':
                 tertiary = []
                 # 3 dimension
-                for axis in range(3): tertiary.append(
-                    [float(coord) for coord in file_pointer.readline().split()])
+                for axis in range(3): 
+                    tertiary.append([float(coord) for coord in file_pointer.readline().split()])
                 dict_.update({'tertiary': tertiary})
             elif next_line == '[MASK]\n':
                 mask = list([_mask_dict[aa] for aa in file_pointer.readline()[:-1]])
@@ -77,6 +78,7 @@ def read_protein_from_file(file_pointer):
                 return dict_
             elif next_line == '':
                 return None
+
 
 import time
 def process_file(input_file, output_file, use_gpu):
@@ -96,8 +98,9 @@ def process_file(input_file, output_file, use_gpu):
         # while there's more proteins to process
         next_protein = read_protein_from_file(input_file_pointer)
         if next_protein is None:
+            print("NEXT IS NONE")
             break
-
+        print("ID PROT",next_protein["id"])
         sequence_length = len(next_protein['primary'])
 
         if sequence_length > MAX_SEQUENCE_LENGTH:
@@ -118,10 +121,37 @@ def process_file(input_file, output_file, use_gpu):
         # when the data is loaded in this padding is removed again. 
 
         # todo: here is the original tertiary structure (FIRST ACHIVEMENT)
+        """
+        # Uncomment
         primary_padded[:sequence_length] = next_protein['primary'] # padd with zeros max seq letters number 
         t_transposed = np.ravel(np.array(next_protein['tertiary']).T) # Flatten layer 
         t_reshaped = np.reshape(t_transposed, (sequence_length,9)).T
-        
+        """
+
+        tertiary = np.array(next_protein['tertiary'])/100
+        primary = np.array(next_protein['primary'])
+        print("SHAPE TERTIARY", tertiary.shape)
+        print("SHAPE PRIMARY", primary.shape)
+        seq_aux_len = sequence_length
+        cont = 0
+        aux_dim = 3
+        tertiary = (tertiary.T)
+        print("LAST:", tertiary[-1], 0)
+        print("LAST:", tertiary[-1], 1)
+        print("LAST:", tertiary[-1], 2)
+
+        while True:
+            aux_dim = cont + 3
+            print("\nCont", cont, "AUX", aux_dim)
+            print(tertiary[cont:aux_dim, 0])
+            #print(tertiary[cont:aux_dim, 1])
+            #print(tertiary[cont:aux_dim, 2])
+            cont += sequence_length
+            x = input('continue...')
+
+        print("PRIMARY SHAPE", np.shape(next_protein['primary']))
+
+        """
         print("ORIGINAL PRIMARY",np.shape(next_protein['primary']), next_protein['primary'] ) # 
         print("MASKED PRIMARY",np.shape(next_protein['primary']), next_protein['primary'][32:] ) # 
         print("PRIMARY PADDED",np.shape(primary_padded), primary_padded ) # 
@@ -135,6 +165,8 @@ def process_file(input_file, output_file, use_gpu):
         #    for e in i:
         #        print("Coord:", e)
         #time.sleep(15000)
+        """
+
 
         tertiary_padded[:,:sequence_length] = t_reshaped
         mask_padded[:sequence_length] = next_protein['mask']
@@ -148,7 +180,7 @@ def process_file(input_file, output_file, use_gpu):
         pos = torch.masked_select(torch.Tensor(tertiary_padded), mask).view(9, -1).transpose(0, 1).unsqueeze(1) / 100 # wtf
         pos_aux = torch.masked_select(torch.Tensor(tertiary_padded), mask).view(9, -1)#.transpose(0, 1)#.unsqueeze(1) / 100 # wtf
         print("POS SHAPE:", np.shape(pos_aux))
-        print("POS after mask selected:", pos_aux)
+        #print("POS after mask selected:", pos_aux)
 
         """
         if use_gpu:
@@ -166,7 +198,9 @@ def process_file(input_file, output_file, use_gpu):
         length_after_mask_removed = len(prim)
         print("DEBUG:", prim)
         print("PRIM CPU.NUMPY():", prim)
-        print("LENGTH AFTER MASK REMOVED:", length_after_mask_removed)
+        print("SHAPE TERTIARY (3, 768)
+PRIMARY SHAPE (256,)
+LENGTH AFTER MASK REMOVED:", length_after_mask_removed)
         primary_padded[:length_after_mask_removed] = prim.data.cpu().numpy()
         tertiary_padded[:length_after_mask_removed, :] = tertiary.data.cpu().numpy()
         mask_padded = np.zeros(MAX_SEQUENCE_LENGTH)
@@ -184,6 +218,7 @@ def process_file(input_file, output_file, use_gpu):
         print("Final Structure")
         # x = input('Enter para continuar...')
         """
+        break # to run the first protein
     print("Wrote output to", current_buffer_allocation, "proteins to", output_file)
 
 
@@ -192,5 +227,7 @@ def filter_input_files(input_files):
     return list(filter(lambda x: not x.endswith(disallowed_file_endings), input_files))
 
 
-process_file('sample.txt', 'output/sample.h5', False)
+#process_file('sample.txt', 'output/sample.h5', False)
+process_file('1vbk.txt', 'output/sample.h5', False)
+process_file('training_30', 'output/sample.h5', False)
 
