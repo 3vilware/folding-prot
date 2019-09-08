@@ -79,6 +79,26 @@ def read_protein_from_file(file_pointer):
             elif next_line == '':
                 return None
 
+def read_protein_from_file_ids(file_pointer):
+
+        dict_ = {}
+        _dssp_dict = {'L': 0, 'H': 1, 'B': 2, 'E': 3, 'G': 4, 'I': 5, 'T': 6, 'S': 7}
+        _mask_dict = {'-': 0, '+': 1}
+
+        while True:
+            next_line = file_pointer.readline()
+            print ("nextline:", next_line)
+            if next_line == '[ID]\n':
+                id_ = file_pointer.readline()[:-1]
+                print("ID:", id_)
+                id_ = id_.split('_')[0]
+                f = open('data/protein_ids.txt', 'a+') # append mode
+                f.write(id_ + '\n')
+
+            elif next_line == '':
+                f.close()
+                return None
+
 
 import time
 def process_file(input_file, output_file, use_gpu):
@@ -228,6 +248,6 @@ def filter_input_files(input_files):
 
 
 #process_file('sample.txt', 'output/sample.h5', False)
-process_file('1vbk.txt', 'output/sample.h5', False)
-process_file('training_30', 'output/sample.h5', False)
+#process_file('1vbk.txt', 'output/sample.h5', False)
+#process_file('training_30', 'output/sample.h5', False)
 
