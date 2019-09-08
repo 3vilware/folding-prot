@@ -56,6 +56,27 @@ def read_pdb(pdb_content):
             #print (line[17:21], "X = ", line[32:39], "Y = ", line[40:48], "Z = ", line[49:56])
     return aa_list
 
+def struct_pdb_to_tensor(pdb_content, sequence): # string sequence (not encoded)
+    """
+    leer cada atomo y agregarlo a un array diferente por cada x, y ,z para cada aa
+    ejemplo:
+        MET: M
+        np.array([ [ |[x1,x2,x3..],[y1,y2,y3...], [z1,z2,z3...] ]| ]) para cada aminoacido en la cadena 
+    """
+    last_aa = ""
+    aa_list = []
+    for line in pdb_content.splitlines():
+        if line[0:4] == 'ATOM':
+            if last_aa == line[17:21]:
+                pass
+            else:
+                #print("CAMBIANDO AMINIACIDO")
+                last_aa = line[17:21]
+                aa_list.append(line[17:21])
+            #print (line[17:21], "X = ", line[32:39], "Y = ", line[40:48], "Z = ", line[49:56])
+    return aa_list
+
+
 def read_pdb_from_file(pdb_path):
     last_aa = ""
     aa_list = []
@@ -69,6 +90,8 @@ def read_pdb_from_file(pdb_path):
                 aa_list.append(line[17:21])
             # print (line[17:21], "X = ", line[32:39], "Y = ", line[40:48], "Z = ", line[49:56])
     return aa_list
+
+
 
 aa_seq = get_fasta('1VBK')
 print(len(aa_seq))
