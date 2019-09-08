@@ -1,5 +1,6 @@
 import requests
 from preprocessing import read_protein_from_file_ids
+import time
 
 AA_ID_DICT = {'ALA': 1, 'CYS': 2, 'ASP': 3, 'GLU': 4, 'PHE': 5, 'GLY': 6, 'HIS': 7, 'ILE': 8, 'LYS': 9,
               'LEU': 10, 'MET': 11, 'ASN': 12, 'PRO': 13, 'GLN': 14, 'ARG': 15, 'SER': 16, 'THR': 17,
@@ -28,6 +29,7 @@ def get_fasta(pdb_id):
     return list(full_sequence)
 
 def get_pdb(pdb_id):
+    pdb_id = pdb_id.replace('\n','')
     result = requests.get(
             'https://files.rcsb.org/view/{}.pdb'.format(pdb_id))
     #print(result.text)
@@ -55,7 +57,7 @@ def read_pdb(pdb_content):
                 #print("CAMBIANDO AMINIACIDO")
                 last_aa = line[17:21]
                 aa_list.append(line[17:21])
-            #print (line[17:21], "X = ", line[32:39], "Y = ", line[40:48], "Z = ", line[49:56])
+            print (line[17:21], "X = ", line[32:39], "Y = ", line[40:48], "Z = ", line[49:56])
     return aa_list
 
 def struct_pdb_to_tensor(pdb_content, sequence): # string sequence (not encoded)
@@ -101,7 +103,9 @@ while True:
         print(len(aa_seq))
         encoded_aa = encode_sequence(aa_seq)
         print(len(encoded_aa))
+        print("PDBID:", next_line)
         #pdb = read_pdb(get_pdb(next_line))
+        #time.sleep(10)
         if next_line == '':
                 f.close()
                 break
